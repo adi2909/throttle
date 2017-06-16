@@ -35,10 +35,10 @@ app.get('/mayi', function(req,res) {
 //--------------------------------------------------------
 // LISTENER for the server
 //--------------------------------------------------------
-var httpServer = http.createServer(app).listen(1337);
+var httpServer = http.createServer(app).listen(80);
 
-console.log('Server running at http://' + (1337 || '*')
-		+ ':' +  1337);
+console.log('Server running at http://' + (80 || '*')
+		+ ':' +  80);
 
 //============================================================================================
 // SUPPORT FUNCTIONS
