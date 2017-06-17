@@ -1,11 +1,22 @@
 
 "use strict";
 
+var fs = require('fs');
 var http = require('http');
 var express = require('express');
 var app = express();
 var argv = require('minimist')(process.argv.slice(2));
-var config = require('./config.js');
+
+var config = loadConfig();  // load async first time
+console.log("CONFIG");
+console.log(config);
+
+setInterval(function() {
+    loadConfig(function(err, data) {
+        config = data;
+        console.log("New config loaded - percentRequests = " + config.percentRequests);
+    });
+}, 5000);
 
 var bodyParser = require('body-parser');
 
@@ -58,10 +69,12 @@ console.log('Server running at http://' + (port || '*')
 // some housekeeping
 //--------------------------------------------------------
 function renderPage(obj, res, page) {
-
     writeAPIResponse(null, obj, res);
 }
 
+//--------------------------------------------------------
+// writeAPIResponse
+//
 function writeAPIResponse(err, jsObj, res) {
     var retObj = {};
 
@@ -80,4 +93,40 @@ function writeAPIResponse(err, jsObj, res) {
     res.end();
 }
 
+//--------------------------------------------------------
+// loadConfig
+//
+function loadConfig(cb) {
 
+    if (cb) {
+        fs.readFile('./config.json', function(err, data) {
+            cb(null, processConfig(err, data));
+        });
+    } else {
+        var data = fs.readFileSync('./config.json');
+        return processConfig(null, data);
+    }
+}
+
+//--------------------------------------------------------
+// processConfig
+//
+function processConfig(err, data) {
+
+    var defConfig = {
+        percentRequests: 1,
+        message: ''
+    };
+
+    if (err) {
+        console.log(err);
+        return defConfig
+    } else {
+        try {
+            return JSON.parse(data);
+        } catch(e) {
+            console.log("ERROR reading config file");
+            return defConfig;
+        }
+    }
+}
