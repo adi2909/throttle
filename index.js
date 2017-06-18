@@ -14,7 +14,7 @@ console.log(config);
 setInterval(function() {
     loadConfig(function(err, data) {
         config = data;
-        console.log("New config loaded - percentRequests = " + config.percentRequests);
+        console.log("New config loaded - serving " + config.numerator + " out of " + config.denominator + " requests.");
     });
 }, 5000);
 
@@ -40,13 +40,15 @@ app.get('/mayi', function(req, res) {
     const obj={response: "no", count: counter};
     obj.message = config.rejectionMessage;
 
-    if (counter * config.percentRequests >= 1) {
+    if (counter < config.numerator) {
         obj.response = "yes";
         obj.count = counter;
         obj.message = '';
-        counter = 0;
     }
     counter++;
+    if (counter >= config.denominator) {
+        counter = 0;
+    }
 	renderPage(obj, res, "validate");
 });
 
@@ -115,18 +117,38 @@ function processConfig(err, data) {
 
     var defConfig = {
         percentRequests: 1,
+        numerator: 1,
+        denominator: 1,
         message: ''
     };
 
     if (err) {
+        console.log('ERROR reading config file');
         console.log(err);
         return defConfig
     } else {
         try {
-            return JSON.parse(data);
+            var cfgObj = JSON.parse(data);
+            var numerator = Math.min(100, cfgObj.percentRequests*100);
+            var denominator = 100;
+            var frac = reduce(numerator, denominator);
+            cfgObj.numerator = frac[0];
+            cfgObj.denominator = frac[1];
+            return cfgObj;
         } catch(e) {
             console.log("ERROR reading config file");
             return defConfig;
         }
     }
+}
+
+//--------------------------------------------------------
+// reduce -  https://stackoverflow.com/questions/4652468/is-there-a-javascript-function-that-reduces-a-fraction
+//
+function reduce(numerator,denominator){
+    var gcd = function gcd(a,b){
+        return b ? gcd(b, a%b) : a;
+    };
+    gcd = gcd(numerator,denominator);
+    return [numerator/gcd, denominator/gcd];
 }
