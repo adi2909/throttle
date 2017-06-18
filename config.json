@@ -1,4 +1,4 @@
 {
-  "percentRequests": 0.50,
+  "percentRequests": 0.80,
   "rejectionMessage": "Quicken is experiencing unusually high loads right now, please try again in 5 minutes"
 }
