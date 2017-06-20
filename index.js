@@ -19,7 +19,7 @@ setInterval(() => {
         config = data;
         console.log("New config loaded - serving " + config.numerator + " out of " + config.denominator + " requests.");
     });
-}, 5000);
+}, 60000);
 
 
 // Our algorithm is simple, we let 1 out of THROTTLE_MAX people in the door
