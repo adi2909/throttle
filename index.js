@@ -1,30 +1,31 @@
 
 "use strict";
 
-var fs = require('fs');
-var http = require('http');
-var express = require('express');
-var app = express();
-var argv = require('minimist')(process.argv.slice(2));
+const fs = require('fs');
+const http = require('http');
+const express = require('express');
+const app = express();
+const argv = require('minimist')(process.argv.slice(2));
+const bodyParser = require('body-parser');
 
-var config = loadConfig();  // load async first time
+const port = argv.port || 1337;
+
+let config = loadConfig();  // load async first time
 console.log("CONFIG");
 console.log(config);
 
-setInterval(function() {
-    loadConfig(function(err, data) {
+setInterval(() => {
+    loadConfig((err, data) => {
         config = data;
         console.log("New config loaded - serving " + config.numerator + " out of " + config.denominator + " requests.");
     });
 }, 5000);
 
-var bodyParser = require('body-parser');
 
 // Our algorithm is simple, we let 1 out of THROTTLE_MAX people in the door
 // if THROTTLE_MAX is 0 or 1, then everyone comes through.
 
-var counter = 0;
-var port = argv.port || 1337;
+let counter = 0;
 
 // bodyParser middleware for parsing req paramaters and making them easily avaialble
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,19 +38,28 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //--------------------------------------------------------
 app.get('/mayi', function(req, res) {
 
-    const obj={response: "no", count: counter};
-    obj.message = config.rejectionMessage;
+    let forceDelay = 0;
 
-    if (counter < config.numerator) {
-        obj.response = "yes";
-        obj.count = counter;
-        obj.message = '';
+    // delay paramater set?
+    if (req.query.delay) {
+        forceDelay = parseInt(req.query.delay);
     }
-    counter++;
-    if (counter >= config.denominator) {
-        counter = 0;
-    }
-	renderPage(obj, res, "validate");
+
+    setTimeout(() => {
+        const obj = {response: "no", count: counter};
+        obj.message = config.rejectionMessage;
+
+        if (counter < config.numerator) {
+            obj.response = "yes";
+            obj.count = counter;
+            obj.message = '';
+        }
+        counter++;
+        if (counter >= config.denominator) {
+            counter = 0;
+        }
+        writeAPIResponse(null, obj, req, res);
+    }, forceDelay);
 });
 
 //--------------------------------------------------------
@@ -65,25 +75,16 @@ console.log('Server running at http://' + (port || '*')
 //============================================================================================
 
 //--------------------------------------------------------
-// renderPage
-//
-// Helper function to render a view/page, and centralize
-// some housekeeping
-//--------------------------------------------------------
-function renderPage(obj, res, page) {
-    writeAPIResponse(null, obj, res);
-}
-
-//--------------------------------------------------------
 // writeAPIResponse
 //
-function writeAPIResponse(err, jsObj, res) {
+function writeAPIResponse(err, jsObj, req, res) {
     var retObj = {};
 
-    if (err) {
+    if (req.query.status) {
+        res.writeHead(parseInt(req.query.status), {"Content-Type": "application/json"});
+    } else if (err) {
         res.writeHead(400, {"Content-Type": "application/json"});
-        res.write({error: "Bad Request"});
-
+        res.write(JSON.stringify({ error: "Bad Request" }));
 	} else {
 		retObj.response = jsObj;
         res.writeHead(200, {"Content-Type": "application/json"});
