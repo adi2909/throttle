@@ -129,10 +129,10 @@ function processConfig(err, data) {
         return defConfig
     } else {
         try {
-            var cfgObj = JSON.parse(data);
-            var numerator = Math.min(100, cfgObj.percentRequests*100);
-            var denominator = 100;
-            var frac = reduce(numerator, denominator);
+            const cfgObj = JSON.parse(data);
+            const numerator = Math.min(100, cfgObj.percentRequests*100);
+            const denominator = 100;
+            const frac = reduce(numerator, denominator);
             cfgObj.numerator = frac[0];
             cfgObj.denominator = frac[1];
             return cfgObj;
