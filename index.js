@@ -74,7 +74,7 @@ app.get('/mayi/polling', function(req, res) {
     }
 });
 
-app.get('/mayi/syncRecommendation', function(req, res) {
+app.get('/syncRecommendation', function(req, res) {
 
     let retObj = config.syncRecommendation || { earliestDate : null, monthsToSync: null };
     if (config.syncRecommendation) {
