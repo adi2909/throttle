@@ -1,4 +1,20 @@
 {
-  "percentRequests": 0.75,
-  "rejectionMessage": "Quicken is experiencing unusually high loads right now, please try again in 5 minutes"
+  "default": {
+    "percentRequests": 0.75,
+    "rejectionMessage": "Quicken is experiencing unusually high loads right now, please try again in 5 minutes"
+  },
+  "sync": {
+    "percentRequests": 0.50,
+    "rejectionMessage": "The Quicken Sync service is experiencing unusually high traffic, please try again in 5 minutes"
+  },
+  "polling": {
+    "percentRequests": 0.75,
+    "rejectionMessage": "Waiting for confirmation, please be patient"
+  },
+  "syncRecommendation": {
+    "earliestDate":"05/01/2017",
+    "monthsToSync": 4,
+    "percentRequests": 1,
+    "rejectionMessage": ""
+  }
 }
