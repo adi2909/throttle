@@ -58,7 +58,18 @@ app.get('/mayi', function(req, res) {
     return processRequest(req, res, config.default);
 });
 
+app.post('/mayi', function(req, res) {
+    return processRequest(req, res, config.default);
+});
+
 app.get('/mayi/sync', function(req, res) {
+    if (config.sync) {
+        return processRequest(req, res, config.sync);
+    } else {
+        return processRequest(req, res, config.default);
+    }
+});
+app.post('/mayi/sync', function(req, res) {
     if (config.sync) {
         return processRequest(req, res, config.sync);
     } else {
@@ -67,6 +78,13 @@ app.get('/mayi/sync', function(req, res) {
 });
 
 app.get('/mayi/polling', function(req, res) {
+    if (config.polling) {
+        return processRequest(req, res, config.polling);
+    } else {
+        return processRequest(req, res, config.default);
+    }
+});
+app.post('/mayi/polling', function(req, res) {
     if (config.polling) {
         return processRequest(req, res, config.polling);
     } else {
@@ -85,8 +103,22 @@ app.get('/syncRecommendation', function(req, res) {
     }
     return writeAPIResponse(null, retObj, req, res);
 });
+app.post('/syncRecommendation', function(req, res) {
+
+    let retObj = config.syncRecommendation || { earliestDate : null, monthsToSync: null };
+    if (config.syncRecommendation) {
+        retObj = {
+            earliestDate: config.syncRecommendation.earliestDate,
+            monthsToSync: config.syncRecommendation.monthsToSync
+        }
+    }
+    return writeAPIResponse(null, retObj, req, res);
+});
 
 app.get('/mayi/*', function(req, res) {
+    return processRequest(req, res, config.default);
+});
+app.post('/mayi/*', function(req, res) {
     return processRequest(req, res, config.default);
 });
 
